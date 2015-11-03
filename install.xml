@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin name="mgtodayinhistory">
+	<title>mgTodayInHistory</title>
+	<summary>Contains over 6000 Today in History facts.</summary>
+	<author>ModsGuru</author>
+	<contributor>ModsGuru</contributor>
+	<version>3.0.1</version>
+	<date>2014-10-27</date>
+	<compatibility>3.0</compatibility>
+
+	<hooks>
+		<hook name="phpCoreBeforePageDisplay" page_type="front">
+			<![CDATA[
+if (iaView::REQUEST_HTML == $iaView->getRequestType() && $iaView->blockExists('mgtodayinhistory'))
+{
+	$facts = $iaCore->iaDb->all(iaDb::ALL_COLUMNS_SELECTION, "MONTH(`tih_date`) = MONTH(NOW()) AND DAY(`tih_date`) = DAY(NOW())", 0, null, 'mg_todayinhistory');
+	$iaView->assign('facts', $facts);
+}
+	]]>
+		</hook>
+	</hooks>
+
+	<phrases>
+		<phrase key="today_interesting_facts" category="frontend">Here are some interesting facts ih history happened on</phrase>
+	</phrases>
+
+	<blocks>
+		<block name="mgtodayinhistory" title="Today In History" collapsible="1" position="bottom" type="smarty" pages="index" sticky="0">
+			<![CDATA[
+<p>{lang key='today_interesting_facts'} {$smarty.now|date_format:"%e %B"}.</p>
+<ol>
+{foreach $facts as $fact}
+	<li>{$fact.tih_event}</li>
+{/foreach}
+</ol>
+			]]>
+		</block>
+	</blocks>
+
+	<install>
+		<sql>
+			<![CDATA[
+CREATE TABLE `{prefix}mg_todayinhistory` (
+	`tih_id` smallint(5) unsigned NOT NULL auto_increment,
+	`tih_date` date NOT NULL default '0000-00-00',
+	`tih_event` varchar(255) NOT NULL default '',
+	PRIMARY KEY  (`tih_id`)
+) {mysql_version};
+			]]>
+		</sql>
+
+		<sql external="1">dumps/events.zip</sql>
+	</install>
+
+	<uninstall>
+		<sql>
+			<![CDATA[
+DROP TABLE IF EXISTS `{prefix}mg_todayinhistory`;
+			]]>
+		</sql>
+	</uninstall>
+</plugin>
